@@ -129,6 +129,7 @@ export function LoginForm() {
         </div>
 
         <Button
+          type="button"
           className="w-full"
           disabled={isPending}
           onClick={() => submit()}
