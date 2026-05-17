@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1)
 });
 
@@ -76,6 +76,24 @@ export const authConfig = {
   ],
 
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+
+      try {
+        const targetUrl = new URL(url);
+
+        if (targetUrl.origin === baseUrl) {
+          return url;
+        }
+      } catch {
+        return `${baseUrl}/dashboard`;
+      }
+
+      return `${baseUrl}/dashboard`;
+    },
+
     async jwt({ token, user }) {
       if (user) {
         const appUser =
@@ -85,7 +103,7 @@ export const authConfig = {
             managerId?: string | null;
           };
 
-        token.id = appUser.id;
+        token.id = String(appUser.id);
         token.role = appUser.role;
         token.department =
           appUser.department;
@@ -97,7 +115,11 @@ export const authConfig = {
     },
 
     async session({ session, token }) {
-      if (session.user) {
+      if (
+        session.user &&
+        token.id &&
+        token.role
+      ) {
         session.user.id = String(
           token.id
         );
@@ -128,27 +150,8 @@ export const authConfig = {
   trustHost: true,
 
   secret:
-    process.env.NEXTAUTH_SECRET,
-
-  cookies: {
-    sessionToken: {
-      name:
-        process.env.NODE_ENV ===
-        "production"
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
-
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure:
-          process.env.NODE_ENV ===
-          "production"
-      }
-    }
-  }
-
+    process.env.AUTH_SECRET ??
+    process.env.NEXTAUTH_SECRET
 } satisfies NextAuthConfig;
 
 export const {

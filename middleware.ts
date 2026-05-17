@@ -10,6 +10,21 @@ const protectedPrefixes = [
   "/reports"
 ];
 
+function usesSecureCookies(request: NextRequest) {
+  const authUrl =
+    process.env.AUTH_URL ??
+    process.env.NEXTAUTH_URL;
+
+  if (authUrl) {
+    return authUrl.startsWith("https://");
+  }
+
+  return (
+    request.nextUrl.protocol === "https:" ||
+    request.headers.get("x-forwarded-proto") === "https"
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -24,11 +39,14 @@ export async function middleware(request: NextRequest) {
 
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET
+    secret:
+      process.env.AUTH_SECRET ??
+      process.env.NEXTAUTH_SECRET,
+    secureCookie: usesSecureCookies(request)
   });
 
   // Not logged in
-  if (!token) {
+  if (!token?.id || !token.role) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }

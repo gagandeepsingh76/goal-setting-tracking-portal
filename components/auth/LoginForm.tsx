@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { LockKeyhole, Mail, Target } from "lucide-react";
 
@@ -39,6 +40,8 @@ const quickLogins = [
 ];
 
 export function LoginForm() {
+  const router = useRouter();
+
   const [email, setEmail] = useState(
     "alice@company.com"
   );
@@ -48,20 +51,62 @@ export function LoginForm() {
 
   const [error, setError] = useState("");
 
-  const [isPending, startTransition] =
-    useTransition();
+  const [isPending, setIsPending] =
+    useState(false);
 
-  function submit(selectedEmail = email) {
+  async function submit(
+    selectedEmail = email,
+    selectedPassword = password
+  ) {
+    if (isPending) {
+      return;
+    }
+
     setError("");
+    setIsPending(true);
 
-    startTransition(async () => {
-      await signIn("credentials", {
-        email: selectedEmail,
-        password,
-        redirect: true,
-        callbackUrl: "/dashboard"
-      });
-    });
+    try {
+      const result = await signIn(
+        "credentials",
+        {
+          email: selectedEmail,
+          password: selectedPassword,
+          redirect: false,
+          callbackUrl: "/dashboard"
+        }
+      );
+
+      if (!result?.ok || result.error) {
+        setError(
+          "Invalid email or password."
+        );
+        return;
+      }
+
+      router.replace("/dashboard");
+      router.refresh();
+    } catch {
+      setError(
+        "Unable to sign in right now. Please try again."
+      );
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  function quickLogin(selectedEmail: string) {
+    const demoPassword = "Password@123";
+
+    setEmail(selectedEmail);
+    setPassword(demoPassword);
+    void submit(
+      selectedEmail,
+      demoPassword
+    );
+  }
+
+  function handleSubmit() {
+    void submit();
   }
 
   return (
@@ -132,7 +177,7 @@ export function LoginForm() {
           type="button"
           className="w-full"
           disabled={isPending}
-          onClick={() => submit()}
+          onClick={handleSubmit}
         >
           {isPending
             ? "Signing in..."
@@ -151,11 +196,9 @@ export function LoginForm() {
                 variant="outline"
                 type="button"
                 disabled={isPending}
-                onClick={() => {
-                  setEmail(login.email);
-                  setPassword("Password@123");
-                  submit(login.email);
-                }}
+                onClick={() =>
+                  quickLogin(login.email)
+                }
               >
                 {login.label}
               </Button>
