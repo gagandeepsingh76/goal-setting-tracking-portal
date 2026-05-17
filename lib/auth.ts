@@ -15,7 +15,8 @@ export const authConfig = {
   },
 
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60
   },
 
   providers: [
@@ -23,22 +24,31 @@ export const authConfig = {
       name: "Credentials",
 
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: {
+          label: "Email",
+          type: "email"
+        },
+
+        password: {
+          label: "Password",
+          type: "password"
+        }
       },
 
       async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
+        const parsed =
+          loginSchema.safeParse(credentials);
 
         if (!parsed.success) {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: parsed.data.email
-          }
-        });
+        const user =
+          await prisma.user.findUnique({
+            where: {
+              email: parsed.data.email
+            }
+          });
 
         if (!user || !user.isActive) {
           return null;
@@ -68,16 +78,19 @@ export const authConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const appUser = user as typeof user & {
-          role: string;
-          department: string;
-          managerId?: string | null;
-        };
+        const appUser =
+          user as typeof user & {
+            role: string;
+            department: string;
+            managerId?: string | null;
+          };
 
         token.id = appUser.id;
         token.role = appUser.role;
-        token.department = appUser.department;
-        token.managerId = appUser.managerId ?? null;
+        token.department =
+          appUser.department;
+        token.managerId =
+          appUser.managerId ?? null;
       }
 
       return token;
@@ -85,18 +98,27 @@ export const authConfig = {
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = String(token.id);
+        session.user.id = String(
+          token.id
+        );
 
         session.user.role = String(
           token.role
-        ) as "EMPLOYEE" | "MANAGER" | "ADMIN";
+        ) as
+          | "EMPLOYEE"
+          | "MANAGER"
+          | "ADMIN";
 
-        session.user.department = String(
-          token.department ?? ""
-        );
+        session.user.department =
+          String(
+            token.department ?? ""
+          );
 
         session.user.managerId =
-          (token.managerId as string | null | undefined) ?? null;
+          (token.managerId as
+            | string
+            | null
+            | undefined) ?? null;
       }
 
       return session;
@@ -104,9 +126,34 @@ export const authConfig = {
   },
 
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET
+
+  secret:
+    process.env.NEXTAUTH_SECRET,
+
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV ===
+        "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure:
+          process.env.NODE_ENV ===
+          "production"
+      }
+    }
+  }
 
 } satisfies NextAuthConfig;
 
-export const { handlers, auth, signIn, signOut } =
-  NextAuth(authConfig);
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut
+} = NextAuth(authConfig);
