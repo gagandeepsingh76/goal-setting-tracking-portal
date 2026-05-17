@@ -47,6 +47,16 @@ export const authConfig = {
           await prisma.user.findUnique({
             where: {
               email: parsed.data.email
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              password: true,
+              role: true,
+              department: true,
+              managerId: true,
+              isActive: true
             }
           });
 

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useRef, useState, useTransition } from "react";
 import { LockKeyhole, Mail, Target } from "lucide-react";
 
+import { loginWithCredentials } from "@/app/(auth)/login/actions";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -40,8 +39,6 @@ const quickLogins = [
 ];
 
 export function LoginForm() {
-  const router = useRouter();
-
   const [email, setEmail] = useState(
     "alice@company.com"
   );
@@ -54,44 +51,53 @@ export function LoginForm() {
   const [isPending, setIsPending] =
     useState(false);
 
-  async function submit(
+  const [, startTransition] =
+    useTransition();
+
+  const isSubmittingRef = useRef(false);
+
+  function submit(
     selectedEmail = email,
     selectedPassword = password
   ) {
-    if (isPending) {
+    if (isSubmittingRef.current) {
       return;
     }
 
+    isSubmittingRef.current = true;
     setError("");
     setIsPending(true);
 
-    try {
-      const result = await signIn(
-        "credentials",
-        {
-          email: selectedEmail,
-          password: selectedPassword,
-          redirect: false,
-          callbackUrl: "/dashboard"
-        }
-      );
+    startTransition(() => {
+      void loginWithCredentials(
+        selectedEmail,
+        selectedPassword
+      )
+        .then((result) => {
+          if (result.redirectTo) {
+            window.location.replace(
+              result.redirectTo
+            );
+            return;
+          }
 
-      if (!result?.ok || result.error) {
-        setError(
-          "Invalid email or password."
-        );
-        return;
-      }
+          setError(
+            result.error ??
+              "Unable to sign in right now. Please try again."
+          );
 
-      router.replace("/dashboard");
-      router.refresh();
-    } catch {
-      setError(
-        "Unable to sign in right now. Please try again."
-      );
-    } finally {
-      setIsPending(false);
-    }
+          isSubmittingRef.current = false;
+          setIsPending(false);
+        })
+        .catch(() => {
+          setError(
+            "Unable to sign in right now. Please try again."
+          );
+
+          isSubmittingRef.current = false;
+          setIsPending(false);
+        });
+    });
   }
 
   function quickLogin(selectedEmail: string) {
