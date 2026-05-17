@@ -1,72 +1,141 @@
 # Goal Setting & Tracking Portal
 
-Production-ready Next.js 14 goal setting, approval, tracking, check-in, reporting, audit, shared-goal, and escalation portal for Employee, Manager, and Admin roles.
+A production-ready enterprise Goal Setting & Performance Tracking Portal built using Next.js 14, Prisma, NextAuth v5, and Neon PostgreSQL.
 
-## Prerequisites
+This platform enables Employees, Managers, and Admins to collaboratively manage organizational goals, approvals, quarterly progress tracking, audit logs, reporting, and role-based workflows in a secure and scalable environment.
 
-- Node.js 18+
-- PostgreSQL running locally
-- A database named `goalportal` or an equivalent database referenced by `DATABASE_URL`
+---
 
-## Setup
+# Live Demo
 
-1. Install dependencies:
+Live Application:  
+https://goal-setting-tracking-portal-nine.vercel.app
 
-   ```bash
-   npm install
-   ```
+GitHub Repository:  
+https://github.com/gagandeepsingh76/goal-setting-tracking-portal
 
-2. Copy `.env.local.example` to `.env.local` and fill in values:
+---
 
-   ```bash
-   cp .env.local.example .env.local
-   ```
+# System Architecture
 
-3. Push the Prisma schema:
+<p align="center">
+  <img width="1536" height="1024" alt="cfb79ec2-e66b-423c-87bd-9f68c1ca6729" src="https://github.com/user-attachments/assets/f95b3b38-9ed0-4127-a54e-fe76ec734dc8" />
+</p>
 
-   ```bash
-   npx prisma db push
-   ```
+---
 
-4. Seed demo data:
+# Application Interface
 
-   ```bash
-   npx prisma db seed
-   ```
+## Login Interface
 
-5. Start the app:
+<p align="center">
+  <img width="1365" height="632" alt="image" src="https://github.com/user-attachments/assets/641bbf51-90b1-4edb-b610-315c13747722" />
+</p>
 
-   ```bash
-   npm run dev
-   ```
+---
 
-6. Open `http://localhost:3000`.
+## Employee Dashboard
 
-## Seeded Credentials
+<p align="center">
+ <img width="1363" height="637" alt="image" src="https://github.com/user-attachments/assets/4e80b580-84a5-48c6-94ff-fc5502f85e4b" />
+</p>
 
-- Admin: `admin@company.com` / `Password@123`
-- Manager: `manager@company.com` / `Password@123`
-- Employee Alice: `alice@company.com` / `Password@123`
-- Employee Bob: `bob@company.com` / `Password@123`
-- Employee Carol: `carol@company.com` / `Password@123`
+---
 
-The login page includes Quick Login buttons for Alice, Manager, and Admin.
+## Manager Approval Workflow
 
-## Scripts
+<p align="center">
+  <img width="1365" height="632" alt="image" src="https://github.com/user-attachments/assets/cf2b066d-1080-4254-9ce8-a018604432f4" />
+</p>
 
-```json
-{
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "db:push": "prisma db push",
-  "db:seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts",
-  "db:studio": "prisma studio"
-}
-```
+---
 
-## Notes
+## Admin Control Panel
 
-- SMTP is optional for local demo. If SMTP env vars are missing, emails are logged to the console with the same HTML content and deep links.
-- The seeded active cycle is `FY 2025-26` with the exact date windows requested in the prompt.
-- All portal routes require authentication, with role checks in both middleware and API route handlers.
+<p align="center">
+ <img width="1365" height="632" alt="image" src="https://github.com/user-attachments/assets/d9f3d176-c808-474f-a9df-91eafe75ffdd" />
+</p>
+
+---
+
+# Key Features
+
+## Role-Based Access Control (RBAC)
+
+- Employee Portal
+- Manager Portal
+- Admin Portal
+- Protected Routes using Middleware
+- JWT Session Authentication
+
+---
+
+## Goal Management
+
+- Create Goals
+- Quarterly Goal Tracking
+- Shared Goals
+- Progress Updates
+- Goal Completion Monitoring
+
+---
+
+## Approval Workflow
+
+- Manager Review System
+- Approve / Reject / Rework Goals
+- Escalation Workflow
+- Department-wise Monitoring
+
+---
+
+## Reports & Analytics
+
+- Quarterly Reports
+- Performance Overview
+- Goal Status Tracking
+- Export Support
+
+---
+
+## Security & Authentication
+
+- NextAuth v5 Authentication
+- Secure Session Cookies
+- Protected Middleware Routes
+- Production-ready Auth Flow
+- Prisma ORM Security Layer
+
+---
+
+## Audit & Activity Tracking
+
+- User Activity Logs
+- Goal Update Tracking
+- Approval History
+- System Event Monitoring
+
+---
+
+# Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js 14 | Frontend & Backend Framework |
+| TypeScript | Type Safety |
+| Tailwind CSS | UI Styling |
+| shadcn/ui | Modern UI Components |
+| Prisma ORM | Database ORM |
+| Neon PostgreSQL | Cloud Database |
+| NextAuth v5 | Authentication |
+| Vercel | Deployment Platform |
+
+---
+
+# Local Setup
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/gagandeepsingh76/goal-setting-tracking-portal.git
+cd goal-setting-tracking-portal
