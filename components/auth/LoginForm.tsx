@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { LockKeyhole, Mail, Target } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -14,7 +15,9 @@ import {
 } from "@/components/ui/card";
 
 import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
+
 import {
   Alert,
   AlertDescription
@@ -52,20 +55,12 @@ export function LoginForm() {
     setError("");
 
     startTransition(async () => {
-      const result = await signIn(
-        "credentials",
-        {
-          email: selectedEmail,
-          password,
-          callbackUrl: "/dashboard"
-        }
-      );
-
-      if ((result as any)?.error) {
-        setError(
-          "Invalid email or password, or the account is inactive."
-        );
-      }
+      await signIn("credentials", {
+        email: selectedEmail,
+        password,
+        redirect: true,
+        callbackUrl: "/dashboard"
+      });
     });
   }
 
