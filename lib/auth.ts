@@ -13,27 +13,45 @@ export const authConfig = {
   pages: {
     signIn: "/login"
   },
+
   session: {
     strategy: "jwt"
   },
+
   providers: [
     Credentials({
       name: "Credentials",
+
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
+
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+
+        if (!parsed.success) {
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email }
+          where: {
+            email: parsed.data.email
+          }
         });
-        if (!user || !user.isActive) return null;
 
-        const ok = await bcrypt.compare(parsed.data.password, user.password);
-        if (!ok) return null;
+        if (!user || !user.isActive) {
+          return null;
+        }
+
+        const ok = await bcrypt.compare(
+          parsed.data.password,
+          user.password
+        );
+
+        if (!ok) {
+          return null;
+        }
 
         return {
           id: user.id,
@@ -46,6 +64,7 @@ export const authConfig = {
       }
     })
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -54,24 +73,40 @@ export const authConfig = {
           department: string;
           managerId?: string | null;
         };
+
         token.id = appUser.id;
         token.role = appUser.role;
         token.department = appUser.department;
         token.managerId = appUser.managerId ?? null;
       }
+
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
         session.user.id = String(token.id);
-        session.user.role = String(token.role) as "EMPLOYEE" | "MANAGER" | "ADMIN";
-        session.user.department = String(token.department ?? "");
-        session.user.managerId = (token.managerId as string | null | undefined) ?? null;
+
+        session.user.role = String(
+          token.role
+        ) as "EMPLOYEE" | "MANAGER" | "ADMIN";
+
+        session.user.department = String(
+          token.department ?? ""
+        );
+
+        session.user.managerId =
+          (token.managerId as string | null | undefined) ?? null;
       }
+
       return session;
     }
   },
-  trustHost: true
+
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET
+
 } satisfies NextAuthConfig;
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+export const { handlers, auth, signIn, signOut } =
+  NextAuth(authConfig);
